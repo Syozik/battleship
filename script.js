@@ -53,7 +53,7 @@ class Gameboard{
         for (let i = 0; i<10; i++){
            this.field[i] = [];
             for (let j = 0; j<10; j++){
-                this.field[i][j] = "-";
+                this.field[i][j] = "";
             }
         }
         this.ships = [];
@@ -87,16 +87,16 @@ class Gameboard{
                 return false;
             }
             for (let i = Math.max(0, yStart-1); i<Math.min(yStart+ship.length+1,10); i++){
-                if (this.field[xStart][i] != "-"){
+                if (this.field[xStart][i] != ""){
                     return false;
                 }
                 if (xStart!=0){
-                    if (this.field[xStart-1][i] != "-"){
+                    if (this.field[xStart-1][i] != ""){
                         return false;
                     }
                 }
                 if (xStart!=9){
-                    if (this.field[xStart+1][i] != "-"){
+                    if (this.field[xStart+1][i] != ""){
                         return false;
                     }
                 }
@@ -108,18 +108,18 @@ class Gameboard{
                 return false;
             }
             for (let i = Math.max(xStart-1,0); i<Math.min(xStart+ship.length+1,10); i++){
-                if (this.field[i][yStart] != "-"){
+                if (this.field[i][yStart] != ""){
                     return false;
                 }
                 
                 if (yStart!=0){
-                    if (this.field[i][yStart-1] != "-"){
+                    if (this.field[i][yStart-1] != ""){
                         return false;
                     }
                 }
 
                 if (yStart!=9){
-                    if (this.field[i][yStart+1] != "-"){
+                    if (this.field[i][yStart+1] != ""){
                         return false;
                     }
                 }
@@ -129,20 +129,19 @@ class Gameboard{
     }
 
     display(){
-        let result = "";
+        let result = [];
         for (let i=0; i<10; i++){
+            let row = [];
             for (let j = 0; j<10; j++){
                 if (includes(this.coordinatesHit, [i,j])){
-                    result += "x";
+                    row.push("x");
                 }else if (includes(this.missedShots, [i,j])){
-                    result += "•";
+                    row.push("•");
                 }else{
-                    result += this.field[i][j];
+                    row.push(this.field[i][j]);
                 }
             }
-            if (i!=9){
-                result += '\n';
-            }
+            result.push(row);
         }
         return result;
     }
@@ -151,7 +150,7 @@ class Gameboard{
         if (this.coordinatesHit.includes([xPos, yPos])){
             return false;
         }
-        if (this.field[xPos][yPos] != "-"){
+        if (this.field[xPos][yPos] != ""){
             let shipHit = this.ships.filter(ship => includes(ship.coordinates, [xPos, yPos]))[0];
             shipHit.hit();
             this.coordinatesHit.push([xPos, yPos]);
@@ -203,13 +202,145 @@ class Gameboard{
 
 class Player{
     constructor(){
-        // 
+        this.gameboard = new Gameboard();
+        this.ships = [new Ship(5), new Ship(4), new Ship(3), new Ship(3), new Ship(2)];
+        this.allPlaced = false;
+        this.missedShotsFromMe = [];
+    }
+
+    randomlyPlaceShips(){
+        if (this.allPlaced){
+            this.resetBoard();
+        }
+
+        for (let ship of this.ships){
+            let isPlaced = false;
+            while(!isPlaced){
+                let x = Math.floor(Math.random()*10);
+                let y = Math.floor(Math.random()*10);
+                let direction;
+                if (Math.random() < 0.5){
+                    direction = "horizontal";
+                }else{
+                    direction = "vertical";
+                }
+                if (this.gameboard.canPlace(ship, x, y,direction)){
+                    this.gameboard.placeShip(ship, x, y, direction);
+                    isPlaced = true;
+                }}
+        }
+
+
+        DOMManipulation.displayGameBoard(this.gameboard);
+        this.allPlaced = true;
+    }
+
+    resetBoard(){
+        this.gameboard = new Gameboard();
+        this.allPlaced = false;
+        DOMManipulation.resetGameBoard(this.gameboard);
     }
 }
-export {Ship, Gameboard};  
-// let a = new Gameboard();
-// console.log(a.field);
 
+class DOMManipulation{
+    static displayGameBoard(gameboard){
+        let field = gameboard.display();
+        for (let i=0;i<10;i++){
+            for (let j=0;j<10;j++){
+                let cell = document.getElementById(`${i}${j}`);
+                if (field[i][j] == "0"){
+                    cell.className = "ship";
+                    
+                    if (j == 9 || field[i][j+1]=="0"){
+                        if (j!=9){
+                            cell.classList.add("rightSide");
+                        }
+                    }
+                    if (j == 0 || field[i][j-1]=="0"){
+                        if (j!=0){
+                            cell.classList.add("leftSide");
+                    
+                        }
+                    }
+                    if (i == 9 || field[i+1][j]=="0"){
+                        if (i!=9){
+                            cell.classList.add("bottomSide");
+                        }
+                    }
+                    if (i == 0 || field[i-1][j]=="0"){
+                        if (i!=0){
+                           cell.classList.add("topSide");
+                        }
+                    }
+                    
+                }else if (field[i][j] == "x"){
+                    cell.className = "hit";
+                    cell.innerHTML = "x";
+                }else if(field[i][j] == "•"){
+                    cell.className = "missed";
+                    cell.innerHTML = "•";
+                }
+            }
+        }
+        
+    }
+
+    static resetGameBoard(){
+        for (let i=0;i<10;i++){
+            for (let j=0;j<10;j++){
+                let cell = document.getElementById(`${i}${j}`);
+                cell.classList = "";
+            }
+        }
+    }
+
+}
+
+class Main{
+    static startGame(human, computer)
+    {
+        if (!human.allPlaced){
+            let message = document.querySelector("h4.message");
+            message.innerHTML = "Please place all ships";
+            message.style.cssText = " display: inline-block;";
+            document.querySelector(".startGame").appendChild(message);
+            return;
+        }
+        
+        document.querySelector(".shipsSettings").style.display = "none";        
+        document.querySelector(".startGame").style.display = "none";        
+
+        let container = document.querySelector(".container");
+
+        let computerField = container.cloneNode(true);
+        let text = document.createElement("h2");
+        text.innerHTML = "Your move ->";
+        text.style.cssText = "background: white; padding: 0 20px; font-size: 3rem; text-decoration: underline";
+
+        document.querySelector(".content").style.gap = "80px";
+        document.querySelector(".content").appendChild(text);
+        document.querySelector(".content").appendChild(computerField);
+    }
+}
+
+let human = new Player();
+let computer = new Player();
+
+let resetButton = document.getElementById("reset");
+let randomlyPlace = document.getElementById("random");
+let startButton = document.getElementById("startGame");
+
+resetButton.addEventListener("click", ()=>{
+    human.resetBoard();
+});
+
+randomlyPlace.addEventListener("click", ()=>{
+    human.randomlyPlaceShips();
+});
+
+startButton.addEventListener("click", ()=>{
+    Main.startGame(human, computer);
+});
 
 // 10
 // 9 
