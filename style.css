@@ -1,0 +1,142 @@
+@font-face {
+    font-family: GochiHand;
+    src: url("./fonts/GochiHand-Regular.ttf");
+}
+
+:root{
+    height: 100%;
+    --cell-size: max(2.2vw, 30px); 
+}
+
+body{
+    font-family: GochiHand;
+    background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), url("./pictures/background.jpg");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.welcomeMessage{
+    font-size: 5rem;
+    margin-top: 5vh;
+    letter-spacing: 3px;
+    text-align: center;
+    color: rgb(121, 41, 9);
+    text-shadow: 2px 2px 0px white;
+    padding: 0px 20px;
+}
+
+.content{
+    margin-left: -100px;
+    margin-top: 5vh;
+    display: flex;
+    align-items: self-start;
+    justify-content: center;
+    gap: 50px;
+}
+
+.container{
+    flex: 1;
+}
+
+.gameboard{
+    flex: 1;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: repeat(10, max(2.5vw, 30px));
+    grid-template-rows: repeat(10, max(2.5vw, 30px));
+    background: rgb(252, 245, 245);
+    border-radius: 10px;
+    border: 2px solid black;
+    box-shadow: 0px 5px 15px -2px;
+    /* padding: 5px; */
+}
+
+.gameboard>div{
+    border: 1px solid rgba(149, 149, 156, 0.815);
+}
+
+.gameboard>div:first-child{
+    border-radius: 10px 0px 0px 0px;
+}
+
+
+.gameboard>div:nth-child(10){
+    border-radius: 0px 10px 0px 0px;
+}
+
+.gameboard>div:nth-child(91){
+    border-radius: 0px 0px 0px 10px;
+}
+
+.gameboard>div:last-child{
+    border-radius: 0px 0px 10px 0px;
+}
+
+.ships{
+    margin-left: 200px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* margin-right: 100px; */
+    gap: 20px;
+}
+
+.ships>div{
+    display: flex;
+    gap: 20px;
+}
+
+.ships>div>div{
+    display: flex;
+}
+
+.cell{
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background-color: white;
+}
+
+.patrolBoat>.cell{
+    border: 2px solid orange;
+}
+
+.submarine>.cell{
+    border: 2px solid green;
+}
+
+.destroyer>.cell{
+    border: 2px solid blue;
+}
+
+.battleship>.cell{
+    border: 2px solid purple;
+}
+
+
+.startGame{
+    flex: 1;
+    width: 600px;
+    /* padding-left: 200px; */
+}
+
+#startGame{
+    margin: 0px auto 0 00px;
+    background-color: rgb(50, 160, 50);
+    font-size: 1.4rem;
+    color: white;
+    border: none;
+    padding: 10px 50px;
+    box-shadow: 6px 7px 2px black;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+}
+
+#startGame:hover{
+    box-shadow: none;
+}
