@@ -10,56 +10,48 @@
 <body>
     <div class="welcomeMessage">Battleship game</div>
     <div class="content">
-        <div class="ships">
-            <div class="oneCell">
-                <div class="patrolBoat">
-                    <div class="cell"></div>
+        <div class="shipsSettings">
+            <div class="ships">
+                <div class="twoCell">
+                    <div class="patrolBoat">
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
                 </div>
-                <div class="patrolBoat">
-                    <div class="cell"></div>
+                <div class="threeCell">
+                    <div class="destroyer">
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
+                    <div class="submarine">
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
                 </div>
-                <div class="patrolBoat">
-                    <div class="cell"></div>
+                <div class="fourCell">
+                    <div class="battleship">
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
                 </div>
-                <div class="patrolBoat">
-                    <div class="cell"></div>
-                </div>
-            </div>
-            <div class="twoCell">
-                <div class="submarine">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                </div>
-                <div class="submarine">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                </div>
-                <div class="submarine">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                </div>
-            </div>
-            <div class="threeCell">
-                <div class="destroyer">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                </div>
-                <div class="destroyer">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                    <div class="cell"></div>
+                <div class="fiveCell">
+                    <div class="carrier">
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
                 </div>
             </div>
-            <div class="fourCell">
-                <div class="battleship">
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                    <div class="cell"></div>
-                </div>
+            <div class="buttons">
+                <button id="random">Randomly place ships<img src="./pictures/shuffle.svg"></button>
+                <button id="reset">Reset</button>
             </div>
-                        
         </div>
         <div class="container">
             <div class="gameboard">
@@ -165,7 +157,10 @@
                 <div id="99">            </div>
             </div>
         </div>
-        <div class="startGame"><button id="startGame">START</button></div>
+        <div class="startGame">
+            <button id="startGame">START</button>
+            <h4 style="display: none;" class="message">Please place all ships</h4>
+        </div>
     </div>
 </body>
 </html>

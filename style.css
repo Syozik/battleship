@@ -30,7 +30,6 @@ body{
 }
 
 .content{
-    margin-left: -100px;
     margin-top: 5vh;
     display: flex;
     align-items: self-start;
@@ -43,7 +42,7 @@ body{
 }
 
 .gameboard{
-    flex: 1;
+    width: max(25vw, 300px);
     margin-right: auto;
     display: grid;
     grid-template-columns: repeat(10, max(2.5vw, 30px));
@@ -51,12 +50,16 @@ body{
     background: rgb(252, 245, 245);
     border-radius: 10px;
     border: 2px solid black;
-    box-shadow: 0px 5px 15px -2px;
+    box-shadow: 0px 5px 15px 2px;
     /* padding: 5px; */
 }
 
-.gameboard>div{
-    border: 1px solid rgba(149, 149, 156, 0.815);
+.gameboard *{
+    border: 1px solid rgba(149, 149, 156, 0.615);
+    text-align: center;
+    padding: auto auto;
+    font-size: 2.5rem;
+    opacity: 0.5;
 }
 
 .gameboard>div:first-child{
@@ -76,13 +79,50 @@ body{
     border-radius: 0px 0px 10px 0px;
 }
 
-.ships{
-    margin-left: 200px;
+.shipsSettings{
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: max(25vw, 300px);
+}
+
+.buttons{
+    margin-top: auto;
+    align-self: flex-end;
+    display: flex;
+    gap: 10px;
+}
+
+.buttons>*{
+    font-size: 1.2rem;
+    border: 2px solid black;
+    color: white;
+    text-shadow: 0px 3px 2px rgb(5, 85, 25);
+    padding: 5px 30px;
+    cursor: pointer;
+    box-shadow: 0px 10px 10px black;
+}
+
+#random{
+    background: rgb(56,87,120);
+    background: linear-gradient(0deg, rgba(56,87,120,1) 0%, rgba(34,221,169,1) 100%);
+    display: flex;
+    align-items: center;
+}
+
+#random>img{
+    width: 23px;
+    vertical-align: center;
+}
+#reset{
+    background: rgb(56,87,120);
+    background: linear-gradient(0deg, rgba(56,87,120,1) 0%, rgba(34,221,169,1) 100%);
+}
+
+.ships{
+    display: flex;
+    flex-direction: column;
     align-items: flex-end;
-    /* margin-right: 100px; */
     gap: 20px;
 }
 
@@ -99,22 +139,24 @@ body{
     width: var(--cell-size);
     height: var(--cell-size);
     background-color: white;
+    text-align: center;
 }
 
 .patrolBoat>.cell{
     border: 2px solid orange;
 }
 
-.submarine>.cell{
+.threeCell>*>.cell{
     border: 2px solid green;
 }
 
-.destroyer>.cell{
-    border: 2px solid blue;
+
+.fourCell>*>.cell{
+    border: 2px solid purple;
 }
 
-.battleship>.cell{
-    border: 2px solid purple;
+.fiveCell>*>.cell{
+    border: 2px solid red;
 }
 
 
@@ -125,7 +167,7 @@ body{
 }
 
 #startGame{
-    margin: 0px auto 0 00px;
+    display: block;
     background-color: rgb(50, 160, 50);
     font-size: 1.4rem;
     color: white;
@@ -134,9 +176,47 @@ body{
     box-shadow: 6px 7px 2px black;
     border-radius: 5px;
     cursor: pointer;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.25s ease;
 }
 
 #startGame:hover{
-    box-shadow: none;
+    box-shadow: 0px 0px 2px 1px black;
+    transform: scale(1.01);
+}
+
+.ship{
+    border: 2px solid black;
+    opacity: 1;
+}
+
+.ship.rightSide{
+    border-right: 1px solid rgba(149, 149, 156, 0.15);;
+}
+.ship.leftSide{
+    border-left: 1px solid rgba(149, 149, 156, 0.15);;
+}
+.ship.topSide{
+    border-top: 1px solid rgba(149, 149, 156, 0.15);;
+}
+.ship.bottomSide{
+    border-bottom: 1px solid rgba(149, 149, 156, 0.15);;
+}
+
+.hit{
+    border:1px solid red;
+}
+
+.missed{
+    border: 1px solid green;
+}
+
+.missed::after{
+    content: "•";
+}
+
+.message{
+    font-size: 1.5rem; 
+    background: rgba(0,0,0,0.6);
+    color: red;
+    padding: 2px 10px;
 }
