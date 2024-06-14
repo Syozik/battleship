@@ -16,6 +16,7 @@ class Ship{
             this.sunk = true;
             return true;
         }
+
         return false;
     }
     
@@ -57,6 +58,7 @@ class Gameboard{
             }
         }
         this.ships = [];
+        this.checkedCoordinates = [];
         this.coordinatesHit = [];
         this.missedShots = [];
     }
@@ -75,7 +77,7 @@ class Gameboard{
                 this.field[i][yStart] = "0";
             }
         }
-
+        ship.setDirection(direction);
         ship.setCoordinates(xStart, yStart);
         this.ships.push(ship);
         return true;
@@ -147,9 +149,11 @@ class Gameboard{
     }
 
     receiveAttack(xPos, yPos){
-        if (this.coordinatesHit.includes([xPos, yPos])){
-            return false;
+        if (includes(this.checkedCoordinates, [xPos, yPos])){
+            return [false];
         }
+
+        this.checkedCoordinates.push([xPos, yPos]);
         if (this.field[xPos][yPos] != ""){
             let shipHit = this.ships.filter(ship => includes(ship.coordinates, [xPos, yPos]))[0];
             shipHit.hit();
@@ -191,21 +195,24 @@ class Gameboard{
                     }
                 }
             }
+            return [true, "hit"];
         }
         else{
             this.missedShots.push([xPos, yPos]);
+            return [true, "missed"];
         }
-        return true;
     }
     
 }
 
 class Player{
-    constructor(){
+    constructor(type = "human"){
         this.gameboard = new Gameboard();
         this.ships = [new Ship(5), new Ship(4), new Ship(3), new Ship(3), new Ship(2)];
         this.allPlaced = false;
         this.missedShotsFromMe = [];
+        this.type = type;
+        this.checkedCoordinates = [];
     }
 
     randomlyPlaceShips(){
@@ -231,42 +238,82 @@ class Player{
         }
 
 
-        DOMManipulation.displayGameBoard(this.gameboard);
+        DOMManipulation.displayGameBoard(this);
         this.allPlaced = true;
     }
 
     resetBoard(){
         this.gameboard = new Gameboard();
         this.allPlaced = false;
-        DOMManipulation.resetGameBoard(this.gameboard);
+        DOMManipulation.resetGameBoard(this.type);
+    }
+
+    attack(opponent, x, y){
+        if (x===undefined || y===undefined){
+            let availableCoordinates = [];
+            for (let i=0; i<10; i++){
+                for (let j=0; j<10; j++){
+                    if (!includes(this.checkedCoordinates, [i, j])){
+                        availableCoordinates.push([i, j]);
+                    }
+                }
+            }
+            [x,y] = availableCoordinates[Math.floor(Math.random()*availableCoordinates.length)];
+        }
+
+        return new Promise((resolve, reject)=>{
+            let result = opponent.gameboard.receiveAttack(x, y);
+            if (result[0]){
+                this.checkedCoordinates.push([x,y]);
+                resolve(result[1]);
+            }else{
+                reject("You already have attacked the cell");
+            }
+        });
+    }
+
+    isGameOver(){
+        for (let ship of this.ships){
+            if (!ship.isSunk())
+                return false;
+        }
+
+        return true;
     }
 }
 
 class DOMManipulation{
-    static displayGameBoard(gameboard){
+    static displayGameBoard(player){
+        let gameboard = player.gameboard;
+        let type = player.type;
+
         let field = gameboard.display();
+        let index = type == "human" ? 0 : 1;
         for (let i=0;i<10;i++){
             for (let j=0;j<10;j++){
-                let cell = document.getElementById(`${i}${j}`);
-                if (field[i][j] == "0"){
-                    cell.className = "ship";
+                let cell = document.getElementsByClassName(`${i}${j}`)[index];
+                if (type == "human" && field[i][j] == "0"){
+                    cell.classList.add("ship");
                     
                     if (j == 9 || field[i][j+1]=="0"){
                         if (j!=9){
                             cell.classList.add("rightSide");
                         }
                     }
+
                     if (j == 0 || field[i][j-1]=="0"){
                         if (j!=0){
                             cell.classList.add("leftSide");
                     
                         }
                     }
+
                     if (i == 9 || field[i+1][j]=="0"){
                         if (i!=9){
                             cell.classList.add("bottomSide");
                         }
                     }
+                    
                     if (i == 0 || field[i-1][j]=="0"){
                         if (i!=0){
                            cell.classList.add("topSide");
@@ -274,10 +321,10 @@ class DOMManipulation{
                     }
                     
                 }else if (field[i][j] == "x"){
-                    cell.className = "hit";
+                    cell.classList.add("hit");
                     cell.innerHTML = "x";
                 }else if(field[i][j] == "•"){
-                    cell.className = "missed";
+                    cell.classList.add("missed");
                     cell.innerHTML = "•";
                 }
             }
@@ -285,16 +332,24 @@ class DOMManipulation{
         
     }
 
-    static resetGameBoard(){
+    static finishGame(winner){    
+        let congratulationsMessage = document.querySelector(".content h2");
+        congratulationsMessage.style.cssText = "font-size: 3rem; text-shadow: 1px 1px 1px white, -2px -2px 2px white; align-self: center; margin-bottom: 200px; width: 22vw";
+        congratulationsMessage.innerHTML = `${winner.type} won!`;
+    }
+
+    static resetGameBoard(type){
+        let index = type == "human" ? 0 : 1;
         for (let i=0;i<10;i++){
             for (let j=0;j<10;j++){
-                let cell = document.getElementById(`${i}${j}`);
-                cell.classList = "";
+                let cell = document.getElementsByClassName(`${i}${j}`)[index];
+                cell.className = `${i}${j}`;
             }
         }
     }
 
 }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 class Main{
     static startGame(human, computer)
@@ -306,25 +361,89 @@ class Main{
             document.querySelector(".startGame").appendChild(message);
             return;
         }
-        
+        let gameOver = false;
+        let moveNow = human;
         document.querySelector(".shipsSettings").style.display = "none";        
         document.querySelector(".startGame").style.display = "none";        
 
         let container = document.querySelector(".container");
-
+        let gameboard = container.querySelector(".gameboard");
+        let playerName = document.createElement("h3");
+        playerName.innerText = "You";
+        playerName.style.cssText = "text-align: center; font-size: 3rem; margin: 0; text-shadow: 2px 2px 2px white, -1px -1px 2px yellow";
+        container.insertBefore(playerName, gameboard);
+        
         let computerField = container.cloneNode(true);
+        computerField.querySelector("h3").innerHTML = "Computer";
+        let field = computerField.querySelector(".gameboard");
+        let pattern = /div\sclass="([^"]*)"><\/div>/g;
+        let replacement = 'button class="$1"></button>';
+        field.innerHTML = field.innerHTML.replace(pattern, replacement);
+        
         let text = document.createElement("h2");
         text.innerHTML = "Your move ->";
-        text.style.cssText = "background: white; padding: 0 20px; font-size: 3rem; text-decoration: underline";
-
+        text.style.cssText = "background: white; width: 22vw;text-align: center; font-size: 3rem; text-decoration: underline; align-self: center; margin-bottom: 200px";
         document.querySelector(".content").style.gap = "80px";
         document.querySelector(".content").appendChild(text);
         document.querySelector(".content").appendChild(computerField);
-    }
-}
+        
+        DOMManipulation.resetGameBoard("computer");
+        computer.randomlyPlaceShips();
+        
+        let gameboardCells = field.querySelectorAll("*");
+        for (let cell of gameboardCells){
+            cell.addEventListener("click", function (){
+                async function attack(player, cell){
+                    if (gameOver)
+                        return;
 
-let human = new Player();
-let computer = new Player();
+                    if (player.type == "human"){
+                        if (moveNow == human){
+                            let x = +cell.className[0];
+                            let y = +cell.className[1];
+                            human.attack(computer, x, y)
+                            .then((value)=>{
+                                DOMManipulation.displayGameBoard(computer);
+                                if (computer.isGameOver()){
+                                    gameOver = true;
+                                    DOMManipulation.finishGame(human);
+                                    return
+                                }
+
+                                if (value == "missed"){
+                                    moveNow = computer;
+                                    attack(computer);
+                                }
+                            })  
+                        }
+                    }else{
+                        document.querySelector(".content h2").innerHTML = "<- Computer's move";
+                        await sleep(1000);
+                        computer.attack(human)
+                        .then((value)=>{
+                            DOMManipulation.displayGameBoard(human);
+                            if (human.isGameOver()){
+                                gameOver = true;
+                                DOMManipulation.finishGame(computer);
+                                return
+                            }
+                            if (value == "hit")
+                                attack(computer);
+                        })
+                        .catch(message => console.log(message));
+                        document.querySelector(".content h2").innerHTML = "Your move ->";
+                        moveNow = human;
+                    }
+
+                }
+                attack(human, cell);
+            })
+        }
+    }
+}   
+
+let human = new Player("human");
+let computer = new Player("computer");
 
 let resetButton = document.getElementById("reset");
 let randomlyPlace = document.getElementById("random");
@@ -347,7 +466,7 @@ startButton.addEventListener("click", ()=>{
 // 8 
 // 7 
 // 6 
-// 5 
+// 5 - - - -- - - -- - --
 // 4 - - -- - - - --- - - 
 // 3 - - -- - - -- - -- - 
 // 2 - - - - - - - - - --
