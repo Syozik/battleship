@@ -20,4 +20,7 @@ To run the game locally, follow these steps:
 1. Clone this repository:
    ```bash
    git clone https://github.com/your-username/battleship-game.git
-2. Open index.html file in your browser
+2. Navigate into the project directory:
+   ```bash
+   cd battleship
+3. Open index.html in your web browser
