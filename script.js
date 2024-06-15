@@ -471,11 +471,7 @@ class DOMManipulation{
                             player.gameboard.changeShipsDirection(ship, +x, +y, newDirection);
                             DOMManipulation.displayGameBoard(player);
                         }else{
-<<<<<<< HEAD
                             console.log("Can't do that");
-=======
-                            console.log("Can'do that");
->>>>>>> 8d447c4 (Update script.js)
                         }
                     }
                 }
