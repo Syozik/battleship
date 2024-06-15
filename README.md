@@ -13,6 +13,7 @@ You can try out the game online [here](https://syozik.github.io/battleship/).
 ## Features
 - Single-player mode against AI.
 - Simple and intuitive UI/UX.
+- Drag and drop to place
 
 ## Installation
 To run the game locally, follow these steps:
