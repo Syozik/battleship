@@ -479,7 +479,7 @@ class DOMManipulation{
         }
         
     }
-
+ 
     static finishGame(winner){    
         let congratulationsMessage = document.querySelector(".content h2");
         congratulationsMessage.style.cssText = "font-size: 3.3rem; margin-top: 100px; text-align: center; background: rgba(115, 115, 115, 0.7); color: white; text-shadow: 2px 2px 2px black; width: 22vw";
