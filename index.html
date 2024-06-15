@@ -9,42 +9,44 @@
 </head>
 <body>
     <div class="welcomeMessage">Battleship game</div>
+    <h1 id="rule">Please drag and drop all ships. Click to change the direction</h1>
     <div class="content">
         <div class="shipsSettings">
             <div class="ships">
-                <div class="twoCell">
-                    <div class="patrolBoat">
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                <div class="_2Cell">
+                    <div class="patrolBoat" draggable="true">
+                        <div class="cell 1"></div>
+                        <div class="cell 2"></div>
                     </div>
                 </div>
-                <div class="threeCell">
-                    <div class="destroyer">
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                
+                <div class="_3Cell">
+                    <div class="destroyer" draggable="true">
+                        <div class="cell 1"></div>
+                        <div class="cell 2"></div>
+                        <div class="cell 3"></div>
                     </div>
-                    <div class="submarine">
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                    </div>
-                </div>
-                <div class="fourCell">
-                    <div class="battleship">
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                    <div class="submarine" draggable="true">
+                        <div class="cell 1"></div>
+                        <div class="cell 2"></div>
+                        <div class="cell 3"></div>
                     </div>
                 </div>
-                <div class="fiveCell">
-                    <div class="carrier">
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                <div class="_4Cell">
+                    <div class="battleship" draggable="true">
+                        <div class="cell 1"></div>
+                        <div class="cell 2"></div>
+                        <div class="cell 3"></div>
+                        <div class="cell 4"></div>
+                    </div>
+                </div>
+                <div class="_5Cell">
+                    <div class="carrier" draggable="true">
+                        <div class="cell 1"></div>
+                        <div class="cell 2"></div>
+                        <div class="cell 3"></div>
+                        <div class="cell 4"></div>
+                        <div class="cell 5"></div>
                     </div>
                 </div>
             </div>

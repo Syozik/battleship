@@ -29,6 +29,13 @@ body{
     padding: 0px 20px;
 }
 
+#rule{
+    margin: 0;
+    margin-top: 10px;
+    background: white;
+    padding: 5px 30px;
+}
+
 .content{
     margin-top: 5vh;
     display: flex;
@@ -151,16 +158,16 @@ body{
     border: 2px solid orange;
 }
 
-.threeCell>*>.cell{
+._3Cell>*>.cell{
     border: 2px solid green;
 }
 
 
-.fourCell>*>.cell{
+._4Cell>*>.cell{
     border: 2px solid purple;
 }
 
-.fiveCell>*>.cell{
+._5Cell>*>.cell{
     border: 2px solid red;
 }
 

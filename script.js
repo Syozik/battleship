@@ -208,19 +208,28 @@ class Gameboard{
 class Player{
     constructor(type = "human"){
         this.gameboard = new Gameboard();
-        this.ships = [new Ship(5), new Ship(4), new Ship(3), new Ship(3), new Ship(2)];
+        this.ships = {"carrier":new Ship(5),
+            "battleship":new Ship(4), 
+            "submarine":new Ship(3), 
+            "destroyer":new Ship(3), 
+            "patrolBoat":new Ship(2)};
         this.allPlaced = false;
         this.type = type;
         this.checkedCoordinates = [];
         this.coordinatesHit = [];
     }
 
-    randomlyPlaceShips(){
-        if (this.allPlaced){
-            this.resetBoard();
-        }
+    areAllPlaced(){
+        this.allPlaced = Object.keys(this.ships).length == 0;
+        return this.allPlaced;
+    }
 
-        for (let ship of this.ships){
+    randomlyPlaceShips(){
+        this.resetBoard();
+        
+        this.ships = new Player(this.type).ships;
+
+        for (let ship of Object.values(this.ships)){
             let isPlaced = false;
             while(!isPlaced){
                 let x = Math.floor(Math.random()*10);
@@ -245,7 +254,8 @@ class Player{
     resetBoard(){
         this.gameboard = new Gameboard();
         this.allPlaced = false;
-        DOMManipulation.resetGameBoard(this.type);
+        this.ships = new Player().ships;
+        DOMManipulation.resetGameBoard(new Player(this.type));
     }
 
     attack(opponent, x, y){
@@ -293,7 +303,7 @@ class Player{
     }
 
     isGameOver(){
-        for (let ship of this.ships){
+        for (let ship of Object.values(this.ships)){
             if (!ship.isSunk())
                 return false;
         }
@@ -305,6 +315,7 @@ class Player{
 class DOMManipulation{
 
     static originalBody = document.body.cloneNode(true);
+
     static displayGameBoard(player){
         let gameboard = player.gameboard;
         let type = player.type;
@@ -373,35 +384,44 @@ class DOMManipulation{
     }
 
 
-    static resetGameBoard(type){
-        let index = type == "human" ? 0 : 1;
+    static resetGameBoard(player){
+        let index = player.type == "human" ? 0 : 1;
         for (let i=0;i<10;i++){
             for (let j=0;j<10;j++){
                 let cell = document.getElementsByClassName(`${i}${j}`)[index];
                 cell.className = `${i}${j}`;
             }
         }
+
+        if (player.type == "computer")
+            return;
+
+        this.resetShips();
+
+    }
+    static resetShips(){
+        for (let ship of Object.keys(new Player().ships)){
+            document.querySelector(`.${ship}`).style.opacity = 1;
+            document.querySelector(`.${ship}`).draggable = true;
+        }
     }
 
+    static setShipsNotDraggable(ship){
+        if (ship == undefined){
+            for (let ship of Object.keys(new Player().ships)){
+                document.querySelector(`.${ship}`).style.opacity = 0.4;
+                document.querySelector(`.${ship}`).draggable = false;
+            }
+        }
+        else{
+            document.querySelector(`.${ship}`).style.opacity = 0.4;
+            document.querySelector(`.${ship}`).draggable = false;
+        }
+
+    }
     static resetScreen(){
         document.body.innerHTML = this.originalBody.innerHTML;
-        let human = new Player("human");
-        let computer = new Player("computer");
-
-        let resetButton = document.getElementById("reset");
-        let randomlyPlace = document.getElementById("random");
-        let startButton = document.getElementById("startGame");
-        resetButton.addEventListener("click", ()=>{
-            human.resetBoard();
-        });
-        
-        randomlyPlace.addEventListener("click", ()=>{
-            human.randomlyPlaceShips();
-        });
-        
-        startButton.addEventListener("click", ()=>{
-            Main.startGame(human, computer);
-        });
+        Main.welcomeWindow();
     }
 
 }
@@ -409,6 +429,66 @@ class DOMManipulation{
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 class Main{
+    static welcomeWindow(){
+        let human = new Player("human");
+        let computer = new Player("computer");
+
+        let resetButton = document.getElementById("reset");
+        let randomlyPlace = document.getElementById("random");
+        let startButton = document.getElementById("startGame");
+
+        resetButton.addEventListener("click", ()=>{
+            human.resetBoard();
+        });
+
+        randomlyPlace.addEventListener("click", ()=>{
+            human.randomlyPlaceShips();
+            DOMManipulation.setShipsNotDraggable();
+        });
+
+        startButton.addEventListener("click", ()=>{
+            Main.startGame(human, computer);
+        });
+
+        let ships = ["patrolBoat", "destroyer", "submarine", "battleship", "carrier"];
+        let cells = document.querySelectorAll(".gameboard *");
+        for(let ship of ships){
+            let shipElement = document.querySelector(`.${ship}`);
+            shipElement.addEventListener("dragstart", (shipDragged)=>{
+                let shipToPlace = document.querySelectorAll(":hover");
+                let shipLength = shipToPlace[shipToPlace.length-3].className[1];
+                let index = shipToPlace[shipToPlace.length-1].className.split(" ")[1] - 1;
+                let shipClass = shipToPlace[shipToPlace.length-2].className;
+                shipDragged.dataTransfer.setData("text/plain", shipLength+index+shipClass);
+            })
+        }
+
+        for (let cell of cells){
+            cell.addEventListener("dragover", (shipDragged)=>{
+                shipDragged.preventDefault();
+            })
+
+            cell.addEventListener("drop", (shipDragged)=>{
+                let [x,y] = cell.className;
+                let [length, index] = shipDragged.dataTransfer.getData("text/plain").slice(0,2);
+                let shipClass = shipDragged.dataTransfer.getData("text/plain").slice(2);
+                if (human.gameboard.canPlace(new Ship(+length), +x, +y-index)){
+                    human.gameboard.placeShip(new Ship(+length), +x, +y-index);
+                    delete human.ships[shipClass];
+                    DOMManipulation.setShipsNotDraggable(shipClass);
+                    human.areAllPlaced();
+                    DOMManipulation.displayGameBoard(human);
+                }else{
+                    console.log("Impossible to place here;");
+                }
+        })
+        }                    
+            
+        
+        
+    }
+    
+    
     static startGame(human, computer)
     {   
         
@@ -419,11 +499,13 @@ class Main{
             document.querySelector(".startGame").appendChild(message);
             return;
         }
+        human.ships = new Player().ships;
         let gameOver = false;
         let moveNow = human;
         document.querySelector(".shipsSettings").style.display = "none";        
         document.querySelector(".startGame").style.display = "none";        
-
+        document.querySelector("#rule").style.display = "none";
+        
         let container = document.querySelector(".container");
         let gameboard = container.querySelector(".gameboard");
         let playerName = document.createElement("h3");
@@ -456,7 +538,7 @@ class Main{
         document.querySelector(".content").appendChild(middle);
         document.querySelector(".content").appendChild(computerField);
         
-        DOMManipulation.resetGameBoard("computer");
+        DOMManipulation.resetGameBoard(computer);
         computer.randomlyPlaceShips();
         
         let gameboardCells = field.querySelectorAll("*");
@@ -511,22 +593,4 @@ class Main{
     }
 }   
 
-let human = new Player("human");
-let computer = new Player("computer");
-
-let resetButton = document.getElementById("reset");
-let randomlyPlace = document.getElementById("random");
-let startButton = document.getElementById("startGame");
-
-resetButton.addEventListener("click", ()=>{
-    human.resetBoard();
-});
-
-randomlyPlace.addEventListener("click", ()=>{
-    human.randomlyPlaceShips();
-});
-
-startButton.addEventListener("click", ()=>{
-    Main.startGame(human, computer);
-});
-
+Main.welcomeWindow();
