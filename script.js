@@ -83,7 +83,12 @@ class Gameboard{
         return true;
     }
 
+
+
     canPlace(ship, xStart, yStart, direction="horizontal"){
+        if (xStart < 0 || yStart < 0)
+            return false;
+
         if (direction == "horizontal"){
             if (yStart+ship.length>10){
                 return false;
@@ -128,6 +133,79 @@ class Gameboard{
             }
             return true;
         }
+    }
+
+    isPossibleToChangeDirection(ship, xStart, yStart, direction){
+        let length = ship.length - 1;
+        if (direction == "horizontal"){
+            if (yStart+length>9){
+                return false;
+            }
+            for (let i = yStart+1; i<Math.min(yStart+length+1,10); i++){
+                if (this.field[xStart][i] != ""){
+                    return false;
+                }
+                if (xStart!=0){
+                    if (this.field[xStart-1][i] != ""){
+                        return false;
+                    }
+                }
+                if (xStart!=9){
+                    if (this.field[xStart+1][i] != ""){
+                        return false;
+                    }
+                }
+                
+            }
+            return true;
+        }else{
+            if (xStart+length>9){
+                return false;
+            }
+            for (let i = xStart+1; i<Math.min(xStart+length+1,10); i++){
+                if (this.field[i][yStart] != ""){
+                    return false;
+                }
+                
+                if (yStart!=0){
+                    if (this.field[i][yStart-1] != ""){
+                        return false;
+                    }
+                }
+
+                if (yStart!=9){
+                    if (this.field[i][yStart+1] != ""){
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    changeShipsDirection(ship, xStart, yStart, direction){
+        const index = this.ships.indexOf(ship);
+        this.ships.splice(index, 1);
+        for (let [x,y] of ship.coordinates){
+            this.field[x][y] = "";
+        }
+
+        DOMManipulation.resetShipsClasses(ship);
+        ship.coordinates = [];
+        if(direction == "horizontal"){
+            for (let i = yStart; i<yStart+ship.length; i++){
+                this.field[xStart][i] = "0";
+            }
+        } else if (direction == "vertical"){
+            for (let i = xStart; i<xStart+ship.length; i++){
+                this.field[i][yStart] = "0";
+            }
+        }
+
+        ship.setDirection(direction);
+        ship.setCoordinates(xStart, yStart);
+        this.ships.push(ship);
+        return true;
     }
 
     display(){
@@ -220,7 +298,12 @@ class Player{
     }
 
     areAllPlaced(){
-        this.allPlaced = Object.keys(this.ships).length == 0;
+        for (let ship of Object.values(this.ships)){
+            if (ship.coordinates.length == 0){
+                return false;
+            }
+        }
+        this.allPlaced = true;
         return this.allPlaced;
     }
 
@@ -246,9 +329,8 @@ class Player{
                 }}
         }
 
-
-        DOMManipulation.displayGameBoard(this);
         this.allPlaced = true;
+        DOMManipulation.displayGameBoard(this);
     }
 
     resetBoard(){
@@ -374,6 +456,27 @@ class DOMManipulation{
                 }
             }
         }
+
+        let cellsPlaced = document.querySelectorAll(".ship");
+        for (let cell of cellsPlaced){
+            cell.addEventListener("click", ()=>{
+                let [x,y] = cell.classList[0];
+                x = +x;
+                y = +y;
+                for (let ship of Object.values(player.ships)){
+                    if(include(ship.coordinates, [x,y])){
+                        let newDirection = ship.direction == "horizontal" ? "vertical" : "horizontal";
+                        let [x,y] = ship.coordinates[0];
+                        if (player.gameboard.isPossibleToChangeDirection(new Ship(2), +x,+y, newDirection)){
+                            player.gameboard.changeShipsDirection(ship, +x, +y, newDirection);
+                            DOMManipulation.displayGameBoard(player);
+                        }else{
+                            console.log("Can't do that");
+                        }
+                    }
+                }
+            })
+        }
         
     }
 
@@ -399,6 +502,21 @@ class DOMManipulation{
         this.resetShips();
 
     }
+    
+    static resetShipsClasses(ship){
+        for (let xy of ship.coordinates){
+            xy = xy.join("");
+            let cells = document.querySelectorAll(`.gameboard div.ship`);
+            for (let cell of cells){
+                if (include(cell.classList, xy)){
+                    let newCell = document.createElement("div");
+                    newCell.className = `${xy}`;
+                    cell.replaceWith(newCell);        
+                }
+            }
+        }
+    }
+
     static resetShips(){
         for (let ship of Object.keys(new Player().ships)){
             document.querySelector(`.${ship}`).style.opacity = 1;
@@ -473,8 +591,8 @@ class Main{
                 let [length, index] = shipDragged.dataTransfer.getData("text/plain").slice(0,2);
                 let shipClass = shipDragged.dataTransfer.getData("text/plain").slice(2);
                 if (human.gameboard.canPlace(new Ship(+length), +x, +y-index)){
-                    human.gameboard.placeShip(new Ship(+length), +x, +y-index);
-                    delete human.ships[shipClass];
+                    human.gameboard.placeShip(human.ships[shipClass], +x, +y-index);
+                    // delete human.ships[shipClass];
                     DOMManipulation.setShipsNotDraggable(shipClass);
                     human.areAllPlaced();
                     DOMManipulation.displayGameBoard(human);
@@ -482,7 +600,8 @@ class Main{
                     console.log("Impossible to place here;");
                 }
         })
-        }                    
+        }
+        
             
         
         
@@ -499,6 +618,8 @@ class Main{
             document.querySelector(".startGame").appendChild(message);
             return;
         }
+         
+
         human.ships = new Player().ships;
         let gameOver = false;
         let moveNow = human;
