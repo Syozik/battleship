@@ -136,12 +136,12 @@ class Gameboard{
     }
 
     isPossibleToChangeDirection(ship, xStart, yStart, direction){
-        let length = ship.length - 1;
+        let length = +ship.length - 1;
         if (direction == "horizontal"){
             if (yStart+length>9){
                 return false;
             }
-            for (let i = yStart+1; i<Math.min(yStart+length+1,10); i++){
+            for (let i = yStart+1; i<Math.min(yStart+length+2,10); i++){
                 if (this.field[xStart][i] != ""){
                     return false;
                 }
@@ -162,7 +162,7 @@ class Gameboard{
             if (xStart+length>9){
                 return false;
             }
-            for (let i = xStart+1; i<Math.min(xStart+length+1,10); i++){
+            for (let i = xStart+1; i<Math.min(xStart+length+2,10); i++){
                 if (this.field[i][yStart] != ""){
                     return false;
                 }
@@ -467,7 +467,7 @@ class DOMManipulation{
                     if(include(ship.coordinates, [x,y])){
                         let newDirection = ship.direction == "horizontal" ? "vertical" : "horizontal";
                         let [x,y] = ship.coordinates[0];
-                        if (player.gameboard.isPossibleToChangeDirection(new Ship(2), +x,+y, newDirection)){
+                        if (player.gameboard.isPossibleToChangeDirection(ship, +x,+y, newDirection)){
                             player.gameboard.changeShipsDirection(ship, +x, +y, newDirection);
                             DOMManipulation.displayGameBoard(player);
                         }else{
@@ -705,10 +705,12 @@ class Main{
                             }
                             if (value == "hit")
                                 attack(computer);
+                            else
+                                moveNow = human;
                         })
                         .catch(message => console.log(message));
                         document.querySelector(".content h2").innerHTML = "Your move ->";
-                        moveNow = human;
+                        
                     }
 
                 }
