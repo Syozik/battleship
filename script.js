@@ -38,7 +38,7 @@ class Ship{
 
 }
 
-function includes(array, subarray){
+function include(array, subarray){
     for (let elem of array){
         let [x,y] = elem;
         if (x == subarray[0] && y == subarray[1]){
@@ -135,9 +135,9 @@ class Gameboard{
         for (let i=0; i<10; i++){
             let row = [];
             for (let j = 0; j<10; j++){
-                if (includes(this.coordinatesHit, [i,j])){
+                if (include(this.coordinatesHit, [i,j])){
                     row.push("x");
-                }else if (includes(this.missedShots, [i,j])){
+                }else if (include(this.missedShots, [i,j])){
                     row.push("•");
                 }else{
                     row.push(this.field[i][j]);
@@ -149,13 +149,13 @@ class Gameboard{
     }
 
     receiveAttack(xPos, yPos){
-        if (includes(this.checkedCoordinates, [xPos, yPos])){
+        if (include(this.checkedCoordinates, [xPos, yPos])){
             return [false];
         }
 
         this.checkedCoordinates.push([xPos, yPos]);
         if (this.field[xPos][yPos] != ""){
-            let shipHit = this.ships.filter(ship => includes(ship.coordinates, [xPos, yPos]))[0];
+            let shipHit = this.ships.filter(ship => include(ship.coordinates, [xPos, yPos]))[0];
             shipHit.hit();
             this.coordinatesHit.push([xPos, yPos]);
             if (shipHit.isSunk()){
@@ -210,9 +210,9 @@ class Player{
         this.gameboard = new Gameboard();
         this.ships = [new Ship(5), new Ship(4), new Ship(3), new Ship(3), new Ship(2)];
         this.allPlaced = false;
-        this.missedShotsFromMe = [];
         this.type = type;
         this.checkedCoordinates = [];
+        this.coordinatesHit = [];
     }
 
     randomlyPlaceShips(){
@@ -251,10 +251,27 @@ class Player{
     attack(opponent, x, y){
         if (x===undefined || y===undefined){
             let availableCoordinates = [];
-            for (let i=0; i<10; i++){
-                for (let j=0; j<10; j++){
-                    if (!includes(this.checkedCoordinates, [i, j])){
-                        availableCoordinates.push([i, j]);
+            if (this.coordinatesHit.length != 0){
+                for (let coordinates of this.coordinatesHit){
+                    let [xPos, yPos] = coordinates;
+                    let areCheckedAll = true;
+                    if (xPos!=9 && !include(this.checkedCoordinates, [xPos+1, yPos]) && !(include(this.coordinatesHit, [xPos, yPos-1])||include(this.coordinatesHit, [xPos,yPos-1])))
+                        availableCoordinates.push([xPos+1, yPos]);
+                    if (xPos!=0 && !include(this.checkedCoordinates, [xPos-1, yPos]) && !(include(this.coordinatesHit, [xPos, yPos-1])||include(this.coordinatesHit, [xPos,yPos-1])))
+                        availableCoordinates.push([xPos-1, yPos]);
+                    if (yPos!=9 && !include(this.checkedCoordinates, [xPos, yPos+1]) && !(include(this.coordinatesHit, [xPos-1, yPos])||include(this.coordinatesHit, [xPos+1,yPos])))
+                        availableCoordinates.push([xPos, yPos+1]);
+                    if (yPos!=0 && !include(this.checkedCoordinates, [xPos, yPos-1])&& !(include(this.coordinatesHit, [xPos-1, yPos])||include(this.coordinatesHit, [xPos+1,yPos])))
+                        availableCoordinates.push([xPos, yPos-1]);
+                    
+                }
+            }
+            if(availableCoordinates.length == 0){
+                for (let i=0; i<10; i++){
+                    for (let j=0; j<10; j++){
+                        if (!include(this.checkedCoordinates, [i, j])){
+                            availableCoordinates.push([i, j]);
+                        }
                     }
                 }
             }
@@ -265,6 +282,9 @@ class Player{
             let result = opponent.gameboard.receiveAttack(x, y);
             if (result[0]){
                 this.checkedCoordinates.push([x,y]);
+                if (result[1] == "hit"){
+                    this.coordinatesHit.push([x,y]);
+                }
                 resolve(result[1]);
             }else{
                 reject("You already have attacked the cell");
@@ -283,6 +303,8 @@ class Player{
 }
 
 class DOMManipulation{
+
+    static originalBody = document.body.cloneNode(true);
     static displayGameBoard(player){
         let gameboard = player.gameboard;
         let type = player.type;
@@ -297,32 +319,44 @@ class DOMManipulation{
                     
                     if (j == 9 || field[i][j+1]=="0"){
                         if (j!=9){
-                            cell.classList.add("rightSide");
+                            cell.classList.add("notRightSide");
                         }
                     }
 
                     if (j == 0 || field[i][j-1]=="0"){
                         if (j!=0){
-                            cell.classList.add("leftSide");
+                            cell.classList.add("notLeftSide");
                     
                         }
                     }
 
                     if (i == 9 || field[i+1][j]=="0"){
                         if (i!=9){
-                            cell.classList.add("bottomSide");
+                            cell.classList.add("notBottomSide");
                         }
                     }
                     
                     if (i == 0 || field[i-1][j]=="0"){
                         if (i!=0){
-                           cell.classList.add("topSide");
+                           cell.classList.add("notTopSide");
                         }
                     }
                     
                 }else if (field[i][j] == "x"){
                     cell.classList.add("hit");
                     cell.innerHTML = "x";
+                    if (j == 9 || field[i][j+1] == "•")
+                        cell.classList.add("rightSide");
+
+                    if (j == 0 || field[i][j-1]=="•")
+                        cell.classList.add("leftSide");
+
+                    if (i == 9 || field[i+1][j]=="•")
+                        cell.classList.add("bottomSide");
+                    
+                    if (i == 0 || field[i-1][j]=="•")
+                        cell.classList.add("topSide");
+
                 }else if(field[i][j] == "•"){
                     cell.classList.add("missed");
                     cell.innerHTML = "•";
@@ -334,9 +368,10 @@ class DOMManipulation{
 
     static finishGame(winner){    
         let congratulationsMessage = document.querySelector(".content h2");
-        congratulationsMessage.style.cssText = "font-size: 3rem; text-shadow: 1px 1px 1px white, -2px -2px 2px white; align-self: center; margin-bottom: 200px; width: 22vw";
-        congratulationsMessage.innerHTML = `${winner.type} won!`;
+        congratulationsMessage.style.cssText = "font-size: 3.3rem; text-align: center; background: rgba(115, 115, 115, 0.7); color: white; text-shadow: 2px 2px 2px black; width: 22vw";
+        congratulationsMessage.innerHTML = `${winner.type} won!`.toUpperCase();
     }
+
 
     static resetGameBoard(type){
         let index = type == "human" ? 0 : 1;
@@ -348,12 +383,35 @@ class DOMManipulation{
         }
     }
 
+    static resetScreen(){
+        document.body.innerHTML = this.originalBody.innerHTML;
+        let human = new Player("human");
+        let computer = new Player("computer");
+
+        let resetButton = document.getElementById("reset");
+        let randomlyPlace = document.getElementById("random");
+        let startButton = document.getElementById("startGame");
+        resetButton.addEventListener("click", ()=>{
+            human.resetBoard();
+        });
+        
+        randomlyPlace.addEventListener("click", ()=>{
+            human.randomlyPlaceShips();
+        });
+        
+        startButton.addEventListener("click", ()=>{
+            Main.startGame(human, computer);
+        });
+    }
+
 }
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 class Main{
     static startGame(human, computer)
-    {
+    {   
+        
         if (!human.allPlaced){
             let message = document.querySelector("h4.message");
             message.innerHTML = "Please place all ships";
@@ -380,11 +438,22 @@ class Main{
         let replacement = 'button class="$1"></button>';
         field.innerHTML = field.innerHTML.replace(pattern, replacement);
         
+        let middle = document.createElement("div");
         let text = document.createElement("h2");
         text.innerHTML = "Your move ->";
-        text.style.cssText = "background: white; width: 22vw;text-align: center; font-size: 3rem; text-decoration: underline; align-self: center; margin-bottom: 200px";
+        text.style.cssText = "background: white; width: 22vw;text-align: center; font-size: 3rem; text-decoration: underline;";
+        middle.appendChild(text);
+        middle.style.cssText = "display: flex; flex-direction: column; align-items: center; height: 28vw;";
+        let backButton = document.createElement("button");
+        backButton.className = "back";
+        backButton.innerText = "BACK";
+        backButton.addEventListener("click", ()=>{
+            DOMManipulation.resetScreen();
+        })
+        middle.appendChild(backButton);
+
         document.querySelector(".content").style.gap = "80px";
-        document.querySelector(".content").appendChild(text);
+        document.querySelector(".content").appendChild(middle);
         document.querySelector(".content").appendChild(computerField);
         
         DOMManipulation.resetGameBoard("computer");
@@ -418,7 +487,7 @@ class Main{
                         }
                     }else{
                         document.querySelector(".content h2").innerHTML = "<- Computer's move";
-                        await sleep(1000);
+                        await sleep(700);
                         computer.attack(human)
                         .then((value)=>{
                             DOMManipulation.displayGameBoard(human);
