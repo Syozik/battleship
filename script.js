@@ -368,7 +368,7 @@ class DOMManipulation{
 
     static finishGame(winner){    
         let congratulationsMessage = document.querySelector(".content h2");
-        congratulationsMessage.style.cssText = "font-size: 3.3rem; text-align: center; background: rgba(115, 115, 115, 0.7); color: white; text-shadow: 2px 2px 2px black; width: 22vw";
+        congratulationsMessage.style.cssText = "font-size: 3.3rem; margin-top: 100px; text-align: center; background: rgba(115, 115, 115, 0.7); color: white; text-shadow: 2px 2px 2px black; width: 22vw";
         congratulationsMessage.innerHTML = `${winner.type} won!`.toUpperCase();
     }
 
@@ -441,16 +441,16 @@ class Main{
         let middle = document.createElement("div");
         let text = document.createElement("h2");
         text.innerHTML = "Your move ->";
-        text.style.cssText = "background: white; width: 22vw;text-align: center; font-size: 3rem; text-decoration: underline;";
+        text.style.cssText = "background: white; width: 22vw;text-align: center; font-size: 3rem; text-decoration: underline; margin-top: 100px;";
         middle.appendChild(text);
-        middle.style.cssText = "display: flex; flex-direction: column; align-items: center; height: 28vw;";
+        middle.style.cssText = "display: flex; flex-direction: column; align-items: center; height: max(28.5vw, 357px);";
         let backButton = document.createElement("button");
         backButton.className = "back";
         backButton.innerText = "BACK";
         backButton.addEventListener("click", ()=>{
             DOMManipulation.resetScreen();
         })
-        middle.appendChild(backButton);
+        document.body.appendChild(backButton);
 
         document.querySelector(".content").style.gap = "80px";
         document.querySelector(".content").appendChild(middle);
@@ -487,7 +487,7 @@ class Main{
                         }
                     }else{
                         document.querySelector(".content h2").innerHTML = "<- Computer's move";
-                        await sleep(700);
+                        await sleep(1000);
                         computer.attack(human)
                         .then((value)=>{
                             DOMManipulation.displayGameBoard(human);

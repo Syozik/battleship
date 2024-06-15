@@ -99,7 +99,7 @@ body{
 }
 
 .buttons>*{
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     border: 2px solid black;
     color: white;
     text-shadow: 0px 3px 2px rgb(5, 85, 25);
@@ -173,7 +173,7 @@ body{
 #startGame{
     display: block;
     background-color: rgb(50, 160, 50);
-    font-size: 1.4rem;
+    font-size: 1.7rem;
     color: white;
     border: none;
     padding: 10px 50px;
@@ -249,14 +249,21 @@ body{
 .back{
     background: linear-gradient(rgb(60, 123, 201), rgba(54, 12, 205));
     color: white;
-    font-size: 1.1rem;
-    padding: 5px 100px;
+    font-size: 1.3rem;
+    padding: 5px 20px;
     border-radius: 20px;
     margin-top: auto;
     cursor: pointer;
     box-shadow: 0px 5px 4px black;
+    position: absolute;
+    left: 3%;
+    top: 6%;
 }
 
 .back:hover{
     box-shadow: 0px 2px 5px 0px black;
+}
+
+button{
+    font-family: inherit;
 }
