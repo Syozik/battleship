@@ -219,6 +219,16 @@ body{
 
 .hit{
     opacity: 1;
+    animation: shot 0.5s ease-out 1;
+}
+
+@keyframes shot {
+    from{
+        font-size: 5rem;
+    }
+    to{
+        font-size: 2rem;
+    }
 }
 
 .hit.rightSide{
@@ -238,6 +248,7 @@ body{
 .missed{
     opacity: 0.8;
     color: rgba(0,0,0,1);
+    animation: shot 0.3s ease-in 1;
 }
 
 .message{

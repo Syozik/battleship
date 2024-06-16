@@ -678,7 +678,7 @@ class Main{
                             let x = +cell.className[0];
                             let y = +cell.className[1];
                             human.attack(computer, x, y)
-                            .then((value)=>{
+                            .then(async (value)=>{
                                 DOMManipulation.displayGameBoard(computer);
                                 if (computer.isGameOver()){
                                     gameOver = true;
@@ -688,15 +688,16 @@ class Main{
 
                                 if (value == "missed"){
                                     moveNow = computer;
+                                    await sleep(1000);
                                     attack(computer);
                                 }
                             })  
                         }
                     }else{
                         document.querySelector(".content h2").innerHTML = "<- Computer's move";
-                        await sleep(1000);
+                        await sleep(700);
                         computer.attack(human)
-                        .then((value)=>{
+                        .then(async (value)=>{
                             DOMManipulation.displayGameBoard(human);
                             if (human.isGameOver()){
                                 gameOver = true;
@@ -709,6 +710,7 @@ class Main{
                                 moveNow = human;
                         })
                         .catch(message => console.log(message));
+                        await sleep(700);
                         document.querySelector(".content h2").innerHTML = "Your move ->";
                         
                     }
