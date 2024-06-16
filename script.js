@@ -469,6 +469,7 @@ class DOMManipulation{
                         let [x,y] = ship.coordinates[0];
                         if (player.gameboard.isPossibleToChangeDirection(ship, +x,+y, newDirection)){
                             player.gameboard.changeShipsDirection(ship, +x, +y, newDirection);
+                            Main.makeShipsDraggable(player);
                             DOMManipulation.displayGameBoard(player);
                         }else{
                             console.log("Can't do that");
@@ -511,7 +512,7 @@ class DOMManipulation{
                 if (include(cell.classList, xy)){
                     let newCell = document.createElement("div");
                     newCell.className = `${xy}`;
-                    cell.replaceWith(newCell);        
+                    cell.replaceWith(newCell);
                 }
             }
         }
@@ -568,6 +569,11 @@ class Main{
             Main.startGame(human, computer);
         });
 
+        this.makeShipsDraggable(human);        
+        
+    }
+    
+    static makeShipsDraggable(player){
         let ships = ["patrolBoat", "destroyer", "submarine", "battleship", "carrier"];
         let cells = document.querySelectorAll(".gameboard *");
         for(let ship of ships){
@@ -590,12 +596,12 @@ class Main{
                 let [x,y] = cell.className;
                 let [length, index] = shipDragged.dataTransfer.getData("text/plain").slice(0,2);
                 let shipClass = shipDragged.dataTransfer.getData("text/plain").slice(2);
-                if (human.gameboard.canPlace(new Ship(+length), +x, +y-index)){
-                    human.gameboard.placeShip(human.ships[shipClass], +x, +y-index);
+                if (player.gameboard.canPlace(new Ship(+length), +x, +y-index)){
+                    player.gameboard.placeShip(player.ships[shipClass], +x, +y-index);
                     // delete human.ships[shipClass];
                     DOMManipulation.setShipsNotDraggable(shipClass);
-                    human.areAllPlaced();
-                    DOMManipulation.displayGameBoard(human);
+                    player.areAllPlaced();
+                    DOMManipulation.displayGameBoard(player);
                 }else{
                     console.log("Impossible to place here;");
                 }
@@ -604,9 +610,7 @@ class Main{
         
             
         
-        
     }
-    
     
     static startGame(human, computer)
     {   
